@@ -11,6 +11,9 @@ interface PeopleTableProps {
   onSort: (params: SearchParams) => void;
 }
 
+// Lista de campos permitidos para ordenação
+const ALLOWED_SORT_FIELDS = ['name', 'sex', 'born', 'died'];
+
 export const PeopleTable = ({
   people,
   sort,
@@ -22,12 +25,16 @@ export const PeopleTable = ({
 
   useEffect(() => {
     const slug = location.pathname.split('/').pop();
-
     setSelectedPerson(slug || null);
   }, [location.pathname]);
 
   const handleSort = useCallback(
     (field: string) => {
+      // Validar se o campo é permitido para ordenação
+      if (!ALLOWED_SORT_FIELDS.includes(field)) {
+        return;
+      }
+
       if (sort === field) {
         if (order === 'desc') {
           // Third click - remove sorting
@@ -62,68 +69,60 @@ export const PeopleTable = ({
           <th>
             <span className="is-flex is-flex-wrap-nowrap">
               Name
-              <a
-                href="#"
-                onClick={e => {
-                  e.preventDefault();
-                  handleSort('name');
-                }}
+              <button
+                type="button"
+                className="button is-small is-text"
+                onClick={() => handleSort('name')}
               >
                 <span className="icon">
                   <i className={getSortIcon('name')} />
                 </span>
-              </a>
+              </button>
             </span>
           </th>
 
           <th>
             <span className="is-flex is-flex-wrap-nowrap">
               Sex
-              <a
-                href="#"
-                onClick={e => {
-                  e.preventDefault();
-                  handleSort('sex');
-                }}
+              <button
+                type="button"
+                className="button is-small is-text"
+                onClick={() => handleSort('sex')}
               >
                 <span className="icon">
                   <i className={getSortIcon('sex')} />
                 </span>
-              </a>
+              </button>
             </span>
           </th>
 
           <th>
             <span className="is-flex is-flex-wrap-nowrap">
               Born
-              <a
-                href="#"
-                onClick={e => {
-                  e.preventDefault();
-                  handleSort('born');
-                }}
+              <button
+                type="button"
+                className="button is-small is-text"
+                onClick={() => handleSort('born')}
               >
                 <span className="icon">
                   <i className={getSortIcon('born')} />
                 </span>
-              </a>
+              </button>
             </span>
           </th>
 
           <th>
             <span className="is-flex is-flex-wrap-nowrap">
               Died
-              <a
-                href="#"
-                onClick={e => {
-                  e.preventDefault();
-                  handleSort('died');
-                }}
+              <button
+                type="button"
+                className="button is-small is-text"
+                onClick={() => handleSort('died')}
               >
                 <span className="icon">
                   <i className={getSortIcon('died')} />
                 </span>
-              </a>
+              </button>
             </span>
           </th>
 
@@ -144,7 +143,7 @@ export const PeopleTable = ({
             <td>
               <Link
                 className={person.sex === 'f' ? 'has-text-danger' : ''}
-                to={`/people/${person.slug}`}
+                to={`/people/${person.slug}${location.search}`}
               >
                 {person.name}
               </Link>
@@ -158,7 +157,7 @@ export const PeopleTable = ({
               {person.motherName && person.mother && (
                 <Link
                   className="has-text-danger"
-                  to={`/people/${person.mother.slug}`}
+                  to={`/people/${person.mother.slug}${location.search}`}
                 >
                   {person.motherName}
                 </Link>
@@ -168,7 +167,9 @@ export const PeopleTable = ({
               {!person.fatherName && '-'}
               {person.fatherName && !person.father && person.fatherName}
               {person.fatherName && person.father && (
-                <Link to={`/people/${person.father.slug}`}>
+                <Link
+                  to={`/people/${person.father.slug}${location.search}`}
+                >
                   {person.fatherName}
                 </Link>
               )}
