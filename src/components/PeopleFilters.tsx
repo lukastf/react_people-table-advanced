@@ -2,164 +2,141 @@ import { useCallback } from 'react';
 import { SearchParams } from '../utils/searchHelper';
 
 interface PeopleFiltersProps {
-  query: string;
+  query: string | null;
+  centuries: string[] | null;
   sex: string | null;
-  centuries: string[];
   onFilterChange: (params: SearchParams) => void;
 }
 
-export const PeopleFilters = ({
+export const PeopleFilters: React.FC<PeopleFiltersProps> = ({
   query,
-  sex,
   centuries,
+  sex,
   onFilterChange,
-}: PeopleFiltersProps) => {
+}) => {
+  // Normalizar valores nulos
+  const queryValue = query ?? '';
+  const currentCenturies = centuries ?? [];
+
   const handleQueryChange = useCallback(
     (event: React.ChangeEvent<HTMLInputElement>) => {
-      const newQuery = event.target.value;
+      const newQuery = event.target.value || null;
 
-      onFilterChange({
-        query: newQuery || null,
-      });
+      onFilterChange({ query: newQuery });
     },
     [onFilterChange],
   );
 
-  const handleCenturyToggle = useCallback(
+  const handleCenturyChange = useCallback(
     (century: string) => {
-      let newCenturies: string[] = [...centuries];
+      const newCenturies = currentCenturies.includes(century)
+        ? currentCenturies.filter(c => c !== century)
+        : [...currentCenturies, century];
 
-      if (newCenturies.includes(century)) {
-        newCenturies = newCenturies.filter(c => c !== century);
-      } else {
-        newCenturies.push(century);
-      }
-
-      onFilterChange({
-        centuries: newCenturies.length ? newCenturies : null,
-      });
+      onFilterChange({ centuries: newCenturies.length > 0 ? newCenturies : null });
     },
-    [centuries, onFilterChange],
+    [currentCenturies, onFilterChange]
   );
 
   const handleSexChange = useCallback(
-    (newSex: string | null) => {
-      onFilterChange({ sex: newSex });
+    (newSex: string) => {
+      onFilterChange({ sex: newSex === sex ? null : newSex });
     },
-    [onFilterChange],
+    [sex, onFilterChange]
   );
 
-  const handleResetFilters = useCallback(() => {
-    onFilterChange({
-      sex: null,
-      query: null,
-      centuries: null,
-      sort: null,
-      order: null,
-    });
+  const handleClearFilters = useCallback(() => {
+    onFilterChange({ query: null, centuries: null, sex: null });
   }, [onFilterChange]);
 
   return (
-    <nav className="panel">
-      <p className="panel-heading">Filters</p>
+    <div className="box">
+      <h2 className="title is-4">Filters</h2>
 
-      <p className="panel-tabs" data-cy="SexFilter">
-        <a
-          className={sex === null ? 'is-active' : ''}
-          href="#"
-          onClick={e => {
-            e.preventDefault();
-            handleSexChange(null);
-          }}
-        >
-          All
-        </a>
-        <a
-          className={sex === 'm' ? 'is-active' : ''}
-          href="#"
-          onClick={e => {
-            e.preventDefault();
-            handleSexChange('m');
-          }}
-        >
-          Male
-        </a>
-        <a
-          className={sex === 'f' ? 'is-active' : ''}
-          href="#"
-          onClick={e => {
-            e.preventDefault();
-            handleSexChange('f');
-          }}
-        >
-          Female
-        </a>
-      </p>
-
-      <div className="panel-block">
-        <p className="control has-icons-left">
+      {/* Query Filter */}
+      <div className="field">
+        <label htmlFor="query-filter" className="label">
+          Name
+        </label>
+        <div className="control">
           <input
-            data-cy="NameFilter"
-            type="search"
+            id="query-filter"
             className="input"
-            placeholder="Search"
-            value={query}
+            type="text"
+            placeholder="Search by name..."
+            value={queryValue}
             onChange={handleQueryChange}
           />
-
-          <span className="icon is-left">
-            <i className="fas fa-search" aria-hidden="true" />
-          </span>
-        </p>
+        </div>
       </div>
 
-      <div className="panel-block">
-        <div className="level is-flex-grow-1 is-mobile" data-cy="CenturyFilter">
-          <div className="level-left">
-            {['16', '17', '18', '19', '20'].map(century => (
-              <a
-                key={century}
-                data-cy="century"
-                className={`button mr-1 ${centuries.includes(century) ? 'is-info' : ''}`}
-                href="#"
-                onClick={e => {
-                  e.preventDefault();
-                  handleCenturyToggle(century);
-                }}
-              >
-                {century}
-              </a>
-            ))}
-          </div>
+      {/* Centuries Filter */}
+      <div className="field">
+        <span className="label">Centuries</span>
+        <div className="control">
+          {['16', '17', '18', '19', '20'].map(century => (
+            <div key={century} className="field">
+              <label className="checkbox" style={{ display: 'block' }}>
+                <input
+                  type="checkbox"
+                  checked={currentCenturies.includes(century)}
+                  onChange={() => handleCenturyChange(century)}
+                />
+                {' '}{century}th century
+              </label>
+            </div>
+          ))}
+        </div>
+      </div>
 
-          <div className="level-right ml-4">
-            <a
-              data-cy="centuryALL"
-              className={`button ${centuries.length === 0 ? 'is-success' : 'is-success is-outlined'}`}
-              href="#"
-              onClick={e => {
-                e.preventDefault();
-                onFilterChange({ centuries: null });
-              }}
-            >
-              All
-            </a>
+      {/* Sex Filter */}
+      <div className="field">
+        <span className="label">Sex</span>
+        <div className="control">
+          <div className="field">
+            <label className="radio">
+              <input
+                type="radio"
+                name="sex"
+                checked={sex === 'm'}
+                onChange={() => handleSexChange('m')}
+              />
+              {' '}Male
+            </label>
+          </div>
+          <div className="field">
+            <label className="radio">
+              <input
+                type="radio"
+                name="sex"
+                checked={sex === 'f'}
+                onChange={() => handleSexChange('f')}
+              />
+              {' '}Female
+            </label>
+          </div>
+          <div className="field">
+            <label className="radio">
+              <input
+                type="radio"
+                name="sex"
+                checked={sex === null}
+                onChange={() => handleSexChange('any')}
+              />
+              {' '}Any
+            </label>
           </div>
         </div>
       </div>
 
-      <div className="panel-block">
-        <a
-          className="button is-link is-outlined is-fullwidth"
-          href="#"
-          onClick={e => {
-            e.preventDefault();
-            handleResetFilters();
-          }}
-        >
-          Reset all filters
-        </a>
+      {/* Clear Filters Button */}
+      <div className="field">
+        <div className="control">
+          <button className="button is-link is-light" onClick={handleClearFilters}>
+            Clear all filters
+          </button>
+        </div>
       </div>
-    </nav>
+    </div>
   );
 };

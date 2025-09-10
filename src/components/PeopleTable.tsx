@@ -1,6 +1,6 @@
 /* eslint-disable jsx-a11y/control-has-associated-label */
 import { useCallback, useState, useEffect } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useParams } from 'react-router-dom';
 import { Person } from '../types/Person';
 import { SearchParams } from '../utils/searchHelper';
 
@@ -22,11 +22,11 @@ export const PeopleTable = ({
 }: PeopleTableProps) => {
   const [selectedPerson, setSelectedPerson] = useState<string | null>(null);
   const location = useLocation();
+  const { slug } = useParams();
 
   useEffect(() => {
-    const slug = location.pathname.split('/').pop();
     setSelectedPerson(slug || null);
-  }, [location.pathname]);
+  }, [slug]);
 
   const handleSort = useCallback(
     (field: string) => {
@@ -167,9 +167,7 @@ export const PeopleTable = ({
               {!person.fatherName && '-'}
               {person.fatherName && !person.father && person.fatherName}
               {person.fatherName && person.father && (
-                <Link
-                  to={`/people/${person.father.slug}${location.search}`}
-                >
+                <Link to={`/people/${person.father.slug}${location.search}`}>
                   {person.fatherName}
                 </Link>
               )}

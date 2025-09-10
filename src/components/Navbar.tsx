@@ -16,7 +16,7 @@ export const Navbar = () => {
             className={({ isActive }) =>
               `navbar-item ${isActive ? 'has-background-grey-lighter' : ''}`
             }
-            to={`/${location.search}`}
+            to={{ pathname: '/', search: location.search }}
           >
             Home
           </NavLink>
@@ -25,7 +25,7 @@ export const Navbar = () => {
             className={({ isActive }) =>
               `navbar-item ${isActive ? 'has-background-grey-lighter' : ''}`
             }
-            to={`/people${location.search}`}
+            to={{ pathname: '/people', search: location.search }}
           >
             People
           </NavLink>
